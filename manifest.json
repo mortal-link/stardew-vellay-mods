@@ -4,6 +4,7 @@
   "Version": "1.0.0",
   "Description": "添加可配置的钢琴块，让你在星露谷创作音乐！",
   "UniqueID": "YourName.PianoBlock",
+  "EntryDll": "PianoBlock.dll",
   "MinimumApiVersion": "4.0.0",
   "UpdateKeys": [],
   "Dependencies": [
