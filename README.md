@@ -43,7 +43,48 @@
 - [SMAPI](https://smapi.io/) 4.0.0或更高版本
 - [Content Patcher](https://www.nexusmods.com/stardewvalley/mods/1915) 2.0.0或更高版本
 
-## 安装方法
+## 🔨 编译方法（开发者）
+
+### 快速开始（推荐）
+
+**使用自动构建脚本：**
+
+**Windows:**
+```cmd
+build.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+脚本会自动：
+- 检查.NET SDK
+- 恢复依赖包
+- 编译项目
+- （可选）自动安装到Mods目录
+
+### 手动编译
+
+1. **安装 .NET 6.0 SDK**
+   - Windows: https://dotnet.microsoft.com/download/dotnet/6.0
+   - Mac: `brew install dotnet-sdk`
+   - Linux: `sudo apt-get install dotnet-sdk-6.0`
+
+2. **编译项目**
+   ```bash
+   dotnet build --configuration Release
+   ```
+
+3. **安装到游戏**
+   - 复制 `bin/Release/net6.0/` 的所有内容到 `星露谷/Mods/PianoBlock/`
+   - 复制 `[CP] Piano Block/` 文件夹到 `星露谷/Mods/`
+
+📖 **详细编译指南请查看 [BUILD.md](BUILD.md)**
+
+## 安装方法（玩家）
 
 1. 安装SMAPI和Content Patcher
 2. 下载本mod的最新版本
