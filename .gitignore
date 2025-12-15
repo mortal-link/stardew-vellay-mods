@@ -7,6 +7,27 @@
 # IDE
 .vscode/
 .idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# NuGet Packages
+*.nupkg
+**/packages/*
+!**/packages/build/
 
 # Logs
 *.log
