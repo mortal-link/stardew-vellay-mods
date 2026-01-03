@@ -2,191 +2,244 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewValley;
+using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 
 namespace PianoBlock
 {
-    /// <summary>钢琴块配置菜单</summary>
     public class PianoBlockMenu : IClickableMenu
     {
         private readonly Vector2 blockPosition;
         private readonly PianoBlockData data;
+        private readonly Texture2D letterBg;
+        private readonly Texture2D chickenTexture;
 
-        // UI组件
-        private readonly List<ClickableComponent> noteComponents = new();
-        private ClickableTextureComponent? playButton;
-        private ClickableTextureComponent? addNoteButton;
-        private ClickableTextureComponent? okButton;
-        private ClickableTextureComponent? tempoUpButton;
-        private ClickableTextureComponent? tempoDownButton;
-
-        private int selectedNoteIndex = 0;
+        private Rectangle contentArea;
         private int scrollOffset = 0;
-        private const int maxVisibleNotes = 8;
+        private const int MaxVisibleNotes = 5;
+        private const int RowHeight = 54;
+        private int lastHoveredNote = -1;
 
-        private string[] noteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        private readonly string[] NoteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
+        // 按钮区域
+        private Rectangle playButtonRect;
+        private Rectangle addButtonRect;
+        private Rectangle scrollUpRect;
+        private Rectangle scrollDownRect;
+        private List<NoteRowButtons> noteRowButtons = new();
+
+
+        private class NoteRowButtons
+        {
+            public int NoteIndex;
+            public Rectangle Row;
+            public Rectangle PitchDown;
+            public Rectangle PitchUp;
+            public Rectangle OctaveDown;
+            public Rectangle OctaveUp;
+            public Rectangle DurationDown;
+            public Rectangle DurationUp;
+            public Rectangle Delete;
+        }
+
+        // 可选的延音时长（毫秒），0表示自然衰减
+        private readonly int[] DurationOptions = { 100, 250, 500, 1000, 2000, 0 };
+
+        // 信纸背景的位置和大小
+        private Rectangle letterRect;
+        private const int TitleHeight = 70;
 
         public PianoBlockMenu(Vector2 position, PianoBlockData blockData)
-            : base(Game1.uiViewport.Width / 2 - 400, Game1.uiViewport.Height / 2 - 300, 800, 600)
+            : base(
+                Game1.uiViewport.Width / 2 - 320,
+                Game1.uiViewport.Height / 2 - 260,
+                640, 520, true)
         {
             blockPosition = position;
             data = blockData;
+            letterBg = Game1.content.Load<Texture2D>("LooseSprites\\letterBg");
+            chickenTexture = Game1.content.Load<Texture2D>("Animals\\White Chicken");
 
-            SetupComponents();
+            // 信纸在标题下方，更宽
+            letterRect = new Rectangle(
+                xPositionOnScreen,
+                yPositionOnScreen + TitleHeight,
+                width,
+                height - TitleHeight
+            );
+
+            int padding = 28;
+            contentArea = new Rectangle(
+                letterRect.X + padding,
+                letterRect.Y + padding,
+                letterRect.Width - padding * 2,
+                letterRect.Height - padding * 2
+            );
+
+            UpdateLayout();
         }
 
-        private void SetupComponents()
+        private void UpdateLayout()
         {
-            int buttonSize = 64;
-            int centerX = xPositionOnScreen + width / 2;
-            int bottomY = yPositionOnScreen + height - 80;
+            noteRowButtons.Clear();
 
-            // 播放按钮
-            playButton = new ClickableTextureComponent(
-                new Rectangle(centerX - 200, bottomY, buttonSize, buttonSize),
-                Game1.mouseCursors,
-                new Rectangle(128, 256, 64, 64),
-                1f);
+            int startY = contentArea.Y + 28;
+            int baseX = contentArea.X;
 
-            // 添加音符按钮
-            addNoteButton = new ClickableTextureComponent(
-                new Rectangle(centerX - 100, bottomY, buttonSize, buttonSize),
-                Game1.mouseCursors,
-                new Rectangle(0, 428, 10, 10),
-                4f);
+            for (int i = 0; i < MaxVisibleNotes; i++)
+            {
+                int noteIndex = i + scrollOffset;
+                if (noteIndex >= data.Notes.Count) break;
 
-            // OK按钮
-            okButton = new ClickableTextureComponent(
-                "OK",
-                new Rectangle(centerX + 100, bottomY, buttonSize, buttonSize),
-                null,
-                "OK",
-                Game1.mouseCursors,
-                new Rectangle(128, 256, 64, 64),
-                1f);
+                int y = startY + i * RowHeight;
 
-            // 曲速按钮
-            tempoUpButton = new ClickableTextureComponent(
-                new Rectangle(xPositionOnScreen + width - 120, yPositionOnScreen + 100, 44, 48),
-                Game1.mouseCursors,
-                new Rectangle(421, 459, 11, 12),
-                4f);
+                // 箭头按钮：点击区域和绘制区域完全一致
+                // 布局: Note(80) | Pitch箭头(60) | Octave箭头(60) | Duration箭头(80) | Delete(40)
+                var rowBtns = new NoteRowButtons
+                {
+                    NoteIndex = noteIndex,
+                    Row = new Rectangle(baseX, y, 75, 44),
+                    PitchDown = new Rectangle(baseX + 80, y + 8, 28, 28),
+                    PitchUp = new Rectangle(baseX + 108, y + 8, 28, 28),
+                    OctaveDown = new Rectangle(baseX + 150, y + 8, 28, 28),
+                    OctaveUp = new Rectangle(baseX + 178, y + 8, 28, 28),
+                    DurationDown = new Rectangle(baseX + 230, y + 8, 28, 28),
+                    DurationUp = new Rectangle(baseX + 258, y + 8, 28, 28),
+                    Delete = new Rectangle(baseX + 310, y + 6, 40, 36)
+                };
+                noteRowButtons.Add(rowBtns);
+            }
 
-            tempoDownButton = new ClickableTextureComponent(
-                new Rectangle(xPositionOnScreen + width - 120, yPositionOnScreen + 160, 44, 48),
-                Game1.mouseCursors,
-                new Rectangle(421, 472, 11, 12),
-                4f);
+            // 滚动按钮
+            scrollUpRect = new Rectangle(contentArea.Right - 50, contentArea.Y + 30, 44, 44);
+            scrollDownRect = new Rectangle(contentArea.Right - 50, contentArea.Y + MaxVisibleNotes * RowHeight - 15, 44, 44);
+
+            // 底部按钮
+            int bottomY = contentArea.Y + MaxVisibleNotes * RowHeight + 20;
+            playButtonRect = new Rectangle(baseX, bottomY, 48, 48);
+            addButtonRect = new Rectangle(baseX + 60, bottomY, 48, 48);
+        }
+
+        public override void performHoverAction(int x, int y)
+        {
+            base.performHoverAction(x, y);
+
+            foreach (var row in noteRowButtons)
+            {
+                if (row.Row.Contains(x, y))
+                {
+                    if (lastHoveredNote != row.NoteIndex)
+                    {
+                        lastHoveredNote = row.NoteIndex;
+                        PlaySingleNote(data.Notes[row.NoteIndex]);
+                    }
+                    return;
+                }
+            }
+            lastHoveredNote = -1;
         }
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
             base.receiveLeftClick(x, y, playSound);
 
-            // 播放按钮
-            if (playButton?.containsPoint(x, y) ?? false)
+            // DEBUG: 显示点击位置
+            Game1.addHUDMessage(new HUDMessage($"Click: {x}, {y}", 2));
+
+            // 滚动
+            if (data.Notes.Count > MaxVisibleNotes)
             {
-                PlaySequence();
-                Game1.playSound("drumkit6");
+                if (scrollUpRect.Contains(x, y) && scrollOffset > 0)
+                {
+                    scrollOffset--;
+                    UpdateLayout();
+                    Game1.playSound("shiny4");
+                    return;
+                }
+                if (scrollDownRect.Contains(x, y) && scrollOffset < data.Notes.Count - MaxVisibleNotes)
+                {
+                    scrollOffset++;
+                    UpdateLayout();
+                    Game1.playSound("shiny4");
+                    return;
+                }
             }
 
-            // 添加音符按钮
-            if (addNoteButton?.containsPoint(x, y) ?? false)
+            if (playButtonRect.Contains(x, y))
+            {
+                PlayAllNotes();
+                Game1.playSound("drumkit6");
+                return;
+            }
+
+            if (addButtonRect.Contains(x, y))
             {
                 data.Notes.Add(new MusicNote());
+                UpdateLayout();
                 Game1.playSound("coin");
+                return;
             }
 
-            // OK按钮
-            if (okButton?.containsPoint(x, y) ?? false)
+            foreach (var row in noteRowButtons)
             {
-                exitThisMenu();
-                Game1.playSound("bigDeSelect");
-            }
-
-            // 曲速调整
-            if (tempoUpButton?.containsPoint(x, y) ?? false)
-            {
-                data.Tempo = Math.Max(100, data.Tempo - 50);
-                Game1.playSound("smallSelect");
-            }
-
-            if (tempoDownButton?.containsPoint(x, y) ?? false)
-            {
-                data.Tempo = Math.Min(2000, data.Tempo + 50);
-                Game1.playSound("smallSelect");
-            }
-
-            // 检查是否点击了音符列表
-            CheckNoteListClick(x, y);
-        }
-
-        private void CheckNoteListClick(int x, int y)
-        {
-            int listX = xPositionOnScreen + 50;
-            int listY = yPositionOnScreen + 100;
-            int itemHeight = 60;
-
-            for (int i = 0; i < Math.Min(data.Notes.Count, maxVisibleNotes); i++)
-            {
-                int index = i + scrollOffset;
-                if (index >= data.Notes.Count) break;
-
-                Rectangle noteRect = new Rectangle(listX, listY + i * itemHeight, 300, 50);
-
-                if (noteRect.Contains(x, y))
+                if (row.PitchDown.Contains(x, y))
                 {
-                    selectedNoteIndex = index;
+                    data.Notes[row.NoteIndex].Pitch = (data.Notes[row.NoteIndex].Pitch - 1 + 12) % 12;
+                    PlaySingleNote(data.Notes[row.NoteIndex]);
+                    return;
+                }
+
+                if (row.PitchUp.Contains(x, y))
+                {
+                    data.Notes[row.NoteIndex].Pitch = (data.Notes[row.NoteIndex].Pitch + 1) % 12;
+                    PlaySingleNote(data.Notes[row.NoteIndex]);
+                    return;
+                }
+
+                if (row.OctaveDown.Contains(x, y))
+                {
+                    data.Notes[row.NoteIndex].Octave = Math.Max(1, data.Notes[row.NoteIndex].Octave - 1);
+                    PlaySingleNote(data.Notes[row.NoteIndex]);
+                    return;
+                }
+
+                if (row.OctaveUp.Contains(x, y))
+                {
+                    data.Notes[row.NoteIndex].Octave = Math.Min(7, data.Notes[row.NoteIndex].Octave + 1);
+                    PlaySingleNote(data.Notes[row.NoteIndex]);
+                    return;
+                }
+
+                if (row.DurationDown.Contains(x, y))
+                {
+                    CycleDuration(row.NoteIndex, -1);
                     Game1.playSound("smallSelect");
                     return;
                 }
 
-                // 删除按钮
-                Rectangle deleteRect = new Rectangle(listX + 310, listY + i * itemHeight + 10, 32, 32);
-                if (deleteRect.Contains(x, y) && data.Notes.Count > 1)
+                if (row.DurationUp.Contains(x, y))
                 {
-                    data.Notes.RemoveAt(index);
-                    if (selectedNoteIndex >= data.Notes.Count)
-                        selectedNoteIndex = data.Notes.Count - 1;
+                    CycleDuration(row.NoteIndex, 1);
+                    Game1.playSound("smallSelect");
+                    return;
+                }
+
+                if (row.Delete.Contains(x, y) && data.Notes.Count > 1)
+                {
+                    data.Notes.RemoveAt(row.NoteIndex);
+                    if (scrollOffset > 0 && scrollOffset >= data.Notes.Count - MaxVisibleNotes + 1)
+                        scrollOffset--;
+                    UpdateLayout();
                     Game1.playSound("trashcan");
                     return;
                 }
 
-                // 音高调整按钮
-                Rectangle pitchUpRect = new Rectangle(listX + 350, listY + i * itemHeight, 30, 24);
-                Rectangle pitchDownRect = new Rectangle(listX + 350, listY + i * itemHeight + 26, 30, 24);
-
-                if (pitchUpRect.Contains(x, y))
+                if (row.Row.Contains(x, y))
                 {
-                    data.Notes[index].Pitch = (data.Notes[index].Pitch + 1) % 12;
-                    Game1.playSound("toolSwap");
-                    return;
-                }
-
-                if (pitchDownRect.Contains(x, y))
-                {
-                    data.Notes[index].Pitch = (data.Notes[index].Pitch - 1 + 12) % 12;
-                    Game1.playSound("toolSwap");
-                    return;
-                }
-
-                // 八度调整按钮
-                Rectangle octaveUpRect = new Rectangle(listX + 390, listY + i * itemHeight, 30, 24);
-                Rectangle octaveDownRect = new Rectangle(listX + 390, listY + i * itemHeight + 26, 30, 24);
-
-                if (octaveUpRect.Contains(x, y))
-                {
-                    data.Notes[index].Octave = Math.Min(8, data.Notes[index].Octave + 1);
-                    Game1.playSound("toolSwap");
-                    return;
-                }
-
-                if (octaveDownRect.Contains(x, y))
-                {
-                    data.Notes[index].Octave = Math.Max(0, data.Notes[index].Octave - 1);
-                    Game1.playSound("toolSwap");
+                    PlaySingleNote(data.Notes[row.NoteIndex]);
                     return;
                 }
             }
@@ -196,139 +249,208 @@ namespace PianoBlock
         {
             base.receiveScrollWheelAction(direction);
 
-            if (direction > 0)
-                scrollOffset = Math.Max(0, scrollOffset - 1);
-            else
-                scrollOffset = Math.Min(Math.Max(0, data.Notes.Count - maxVisibleNotes), scrollOffset + 1);
-        }
-
-        private void PlaySequence()
-        {
-            // 播放音符序列
-            for (int i = 0; i < data.Notes.Count; i++)
+            int maxScroll = Math.Max(0, data.Notes.Count - MaxVisibleNotes);
+            if (direction > 0 && scrollOffset > 0)
             {
-                var note = data.Notes[i];
-                PlayNote(note, i);
+                scrollOffset--;
+                UpdateLayout();
+            }
+            else if (direction < 0 && scrollOffset < maxScroll)
+            {
+                scrollOffset++;
+                UpdateLayout();
             }
         }
 
-        private void PlayNote(MusicNote note, int delay)
+        public override void receiveKeyPress(Keys key)
         {
-            // 使用游戏的定时器系统延迟播放
-            Game1.delayedActions.Add(new DelayedAction(delay * data.Tempo / 10, () =>
+            base.receiveKeyPress(key);
+        }
+
+        private void PlaySingleNote(MusicNote note)
+        {
+            try
             {
-                // 使用flute音效，通过音高参数调整
-                Game1.playSound("flute", note.GetGamePitch());
-            }));
+                ModEntry.PlayNote(note);
+            }
+            catch
+            {
+                // Ignore errors
+            }
+        }
+
+        private void PlayAllNotes()
+        {
+            foreach (var note in data.Notes)
+            {
+                PlaySingleNote(note);
+            }
+        }
+
+        private void CycleDuration(int noteIndex, int direction)
+        {
+            var note = data.Notes[noteIndex];
+            // 找到当前时值在选项中的位置
+            int currentIdx = 2; // 默认为500ms的位置
+            for (int i = 0; i < DurationOptions.Length; i++)
+            {
+                if (note.DurationMs == DurationOptions[i])
+                {
+                    currentIdx = i;
+                    break;
+                }
+            }
+            // 循环切换
+            int newIdx = (currentIdx + direction + DurationOptions.Length) % DurationOptions.Length;
+            note.DurationMs = DurationOptions[newIdx];
+        }
+
+        private string GetDurationDisplay(int durationMs)
+        {
+            // 将时值转换为易读的显示格式
+            if (durationMs == 0) return "~";  // 自然衰减
+            if (durationMs >= 1000) return $"{durationMs / 1000}s";
+            return $"{durationMs}";
         }
 
         public override void draw(SpriteBatch b)
         {
-            // 绘制背景遮罩
+            // 背景遮罩
             b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.75f);
 
-            // 绘制主窗口
-            Game1.drawDialogueBox(xPositionOnScreen, yPositionOnScreen, width, height, false, true);
+            // 标题（在信纸上方）
+            SpriteText.drawStringWithScrollCenteredAt(b, "Piano Block", xPositionOnScreen + width / 2, yPositionOnScreen + 5);
 
-            // 绘制标题
-            string title = "钢琴块配置";
-            Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
-            b.DrawString(Game1.dialogueFont, title,
-                new Vector2(xPositionOnScreen + width / 2 - titleSize.X / 2, yPositionOnScreen + 20),
-                Game1.textColor);
+            // 信纸背景（第一个精灵，位于0,0，大小320x180）
+            Rectangle sourceRect = new Rectangle(0, 0, 320, 180);
+            b.Draw(letterBg, letterRect, sourceRect, Color.White);
 
-            // 绘制曲速信息
-            string tempoText = $"曲速: {data.Tempo}ms";
-            b.DrawString(Game1.smallFont, tempoText,
-                new Vector2(xPositionOnScreen + width - 200, yPositionOnScreen + 130),
-                Game1.textColor);
+            // 列标题
+            int headerY = contentArea.Y;
+            Utility.drawTextWithShadow(b, "Note", Game1.smallFont, new Vector2(contentArea.X + 10, headerY), Game1.textColor);
+            Utility.drawTextWithShadow(b, "Pitch", Game1.smallFont, new Vector2(contentArea.X + 80, headerY), Game1.textColor);
+            Utility.drawTextWithShadow(b, "Oct", Game1.smallFont, new Vector2(contentArea.X + 152, headerY), Game1.textColor);
+            Utility.drawTextWithShadow(b, "Len", Game1.smallFont, new Vector2(contentArea.X + 230, headerY), Game1.textColor);
 
-            // 绘制音符列表
             DrawNoteList(b);
 
-            // 绘制按钮
-            playButton?.draw(b);
-            addNoteButton?.draw(b);
-            okButton?.draw(b);
-            tempoUpButton?.draw(b);
-            tempoDownButton?.draw(b);
+            // 滚动按钮
+            if (data.Notes.Count > MaxVisibleNotes)
+            {
+                bool canUp = scrollOffset > 0;
+                bool canDown = scrollOffset < data.Notes.Count - MaxVisibleNotes;
 
-            // 绘制按钮标签
-            DrawButtonLabels(b);
+                // 上箭头
+                b.Draw(Game1.mouseCursors, new Vector2(scrollUpRect.X + 10, scrollUpRect.Y + 12),
+                    new Rectangle(421, 459, 11, 12), canUp ? Color.White : Color.White * 0.35f, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
 
-            // 绘制鼠标
+                // 下箭头
+                b.Draw(Game1.mouseCursors, new Vector2(scrollDownRect.X + 10, scrollDownRect.Y + 10),
+                    new Rectangle(421, 472, 11, 12), canDown ? Color.White : Color.White * 0.35f, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+
+                string scrollText = $"{scrollOffset + 1}-{Math.Min(scrollOffset + MaxVisibleNotes, data.Notes.Count)}/{data.Notes.Count}";
+                Vector2 scrollSize = Game1.tinyFont.MeasureString(scrollText);
+                Utility.drawTextWithShadow(b, scrollText, Game1.tinyFont,
+                    new Vector2(scrollUpRect.X + 22 - scrollSize.X / 2, scrollUpRect.Bottom + 15), Color.Gray);
+            }
+
+            DrawBottomControls(b);
+
+            // 关闭按钮
+            base.draw(b);
             drawMouse(b);
         }
 
         private void DrawNoteList(SpriteBatch b)
         {
-            int listX = xPositionOnScreen + 50;
-            int listY = yPositionOnScreen + 100;
-            int itemHeight = 60;
-
-            // 绘制列表标题
-            b.DrawString(Game1.smallFont, "音符序列:", new Vector2(listX, listY - 30), Game1.textColor);
-
-            for (int i = 0; i < Math.Min(data.Notes.Count, maxVisibleNotes); i++)
+            foreach (var row in noteRowButtons)
             {
-                int index = i + scrollOffset;
-                if (index >= data.Notes.Count) break;
+                var note = data.Notes[row.NoteIndex];
 
-                var note = data.Notes[index];
-                int y = listY + i * itemHeight;
-
-                // 绘制选中背景
-                if (index == selectedNoteIndex)
+                if (lastHoveredNote == row.NoteIndex)
                 {
-                    b.Draw(Game1.staminaRect, new Rectangle(listX - 5, y - 5, 440, 55), Color.Yellow * 0.3f);
+                    b.Draw(Game1.staminaRect, new Rectangle(contentArea.X - 4, row.Row.Y - 2, 380, 48), Color.Gold * 0.2f);
                 }
 
-                // 绘制音符信息
-                string noteText = $"{index + 1}. {note.GetNoteName()}";
-                b.DrawString(Game1.dialogueFont, noteText, new Vector2(listX, y), Game1.textColor);
+                string noteText = $"{row.NoteIndex + 1}. {NoteNames[note.Pitch]}{note.Octave}";
+                Utility.drawTextWithShadow(b, noteText, Game1.dialogueFont,
+                    new Vector2(row.Row.X + 2, row.Row.Y + 6), Game1.textColor);
 
-                // 绘制删除按钮（X）
+                // DEBUG: 绘制点击区域边框 (更明显的颜色)
+                b.Draw(Game1.staminaRect, row.PitchDown, Color.Red * 0.5f);
+                b.Draw(Game1.staminaRect, row.PitchUp, Color.Lime * 0.5f);
+                b.Draw(Game1.staminaRect, row.OctaveDown, Color.Blue * 0.5f);
+                b.Draw(Game1.staminaRect, row.OctaveUp, Color.Yellow * 0.5f);
+                b.Draw(Game1.staminaRect, row.DurationDown, Color.Cyan * 0.5f);
+                b.Draw(Game1.staminaRect, row.DurationUp, Color.Magenta * 0.5f);
+                b.Draw(Game1.staminaRect, row.Delete, Color.Red * 0.5f);
+
+                // 箭头绘制在点击区域正中央 (箭头原始11x12，缩放2倍=22x24)
+                // Pitch 下箭头
+                b.Draw(Game1.mouseCursors, new Vector2(row.PitchDown.X + 3, row.PitchDown.Y + 2),
+                    new Rectangle(421, 472, 11, 12), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+                // Pitch 上箭头
+                b.Draw(Game1.mouseCursors, new Vector2(row.PitchUp.X + 3, row.PitchUp.Y + 2),
+                    new Rectangle(421, 459, 11, 12), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+                // Octave 下箭头
+                b.Draw(Game1.mouseCursors, new Vector2(row.OctaveDown.X + 3, row.OctaveDown.Y + 2),
+                    new Rectangle(421, 472, 11, 12), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+                // Octave 上箭头
+                b.Draw(Game1.mouseCursors, new Vector2(row.OctaveUp.X + 3, row.OctaveUp.Y + 2),
+                    new Rectangle(421, 459, 11, 12), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+                // Duration 下箭头
+                b.Draw(Game1.mouseCursors, new Vector2(row.DurationDown.X + 3, row.DurationDown.Y + 2),
+                    new Rectangle(421, 472, 11, 12), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+                // Duration 上箭头
+                b.Draw(Game1.mouseCursors, new Vector2(row.DurationUp.X + 3, row.DurationUp.Y + 2),
+                    new Rectangle(421, 459, 11, 12), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+
+                // 显示当前时值（在Duration箭头右侧）
+                string durText = GetDurationDisplay(note.DurationMs);
+                Utility.drawTextWithShadow(b, durText, Game1.smallFont,
+                    new Vector2(row.DurationUp.Right + 4, row.DurationUp.Y + 4), Color.SaddleBrown);
+
                 if (data.Notes.Count > 1)
                 {
-                    b.DrawString(Game1.dialogueFont, "X",
-                        new Vector2(listX + 310, y), Color.Red);
+                    // 红色叉号文字
+                    Utility.drawTextWithShadow(b, "X", Game1.dialogueFont,
+                        new Vector2(row.Delete.X + 10, row.Delete.Y + 2), Color.DarkRed);
                 }
 
-                // 绘制调整按钮
-                b.DrawString(Game1.smallFont, "↑", new Vector2(listX + 355, y - 2), Game1.textColor);
-                b.DrawString(Game1.smallFont, "↓", new Vector2(listX + 355, y + 22), Game1.textColor);
-                b.DrawString(Game1.smallFont, "8↑", new Vector2(listX + 393, y - 2), Game1.textColor);
-                b.DrawString(Game1.smallFont, "8↓", new Vector2(listX + 393, y + 22), Game1.textColor);
-            }
-
-            // 绘制滚动指示器
-            if (data.Notes.Count > maxVisibleNotes)
-            {
-                string scrollHint = $"{scrollOffset + 1}-{Math.Min(scrollOffset + maxVisibleNotes, data.Notes.Count)} / {data.Notes.Count}";
-                b.DrawString(Game1.smallFont, scrollHint,
-                    new Vector2(listX, listY + maxVisibleNotes * itemHeight + 10), Color.Gray);
+                // 分隔线
+                b.Draw(Game1.staminaRect, new Rectangle(contentArea.X, row.Row.Bottom + 3, 380, 1), Color.Gray * 0.3f);
             }
         }
 
-        private void DrawButtonLabels(SpriteBatch b)
+        private void DrawBottomControls(SpriteBatch b)
         {
-            if (playButton != null)
-            {
-                string playText = "播放";
-                Vector2 textSize = Game1.smallFont.MeasureString(playText);
-                b.DrawString(Game1.smallFont, playText,
-                    new Vector2(playButton.bounds.Center.X - textSize.X / 2, playButton.bounds.Bottom + 5),
-                    Game1.textColor);
-            }
+            // DEBUG: 绘制底部按钮点击区域
+            b.Draw(Game1.staminaRect, playButtonRect, Color.Cyan * 0.3f);
+            b.Draw(Game1.staminaRect, addButtonRect, Color.Magenta * 0.3f);
 
-            if (addNoteButton != null)
-            {
-                string addText = "添加";
-                Vector2 textSize = Game1.smallFont.MeasureString(addText);
-                b.DrawString(Game1.smallFont, addText,
-                    new Vector2(addNoteButton.bounds.Center.X - textSize.X / 2, addNoteButton.bounds.Bottom + 5),
-                    Game1.textColor);
-            }
+            // Play 按钮 - 白色小鸡图标
+            b.Draw(chickenTexture, new Rectangle(playButtonRect.X, playButtonRect.Y, 48, 48),
+                new Rectangle(0, 0, 16, 16), Color.White);
+
+            // Add 按钮 - 绿色加号
+            b.Draw(Game1.mouseCursors, new Vector2(addButtonRect.X + 8, addButtonRect.Y + 8),
+                new Rectangle(0, 410, 16, 16), Color.White, 0f, Vector2.Zero, 2f, SpriteEffects.None, 0.86f);
+        }
+
+        private void DrawSmallButton(SpriteBatch b, Rectangle rect, string text, bool isDelete = false)
+        {
+            Color tint = isDelete ? new Color(255, 180, 180) : Color.White;
+
+            IClickableMenu.drawTextureBox(b, Game1.mouseCursors, new Rectangle(432, 439, 9, 9),
+                rect.X, rect.Y, rect.Width, rect.Height, tint, 4f, false);
+
+            Vector2 textSize = Game1.smallFont.MeasureString(text);
+            Vector2 textPos = new Vector2(
+                rect.X + (rect.Width - textSize.X) / 2,
+                rect.Y + (rect.Height - textSize.Y) / 2
+            );
+            Color textColor = isDelete ? new Color(139, 69, 69) : Game1.textColor;
+            Utility.drawTextWithShadow(b, text, Game1.smallFont, textPos, textColor);
         }
     }
 }

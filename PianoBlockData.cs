@@ -33,8 +33,8 @@ namespace PianoBlock
         /// <summary>八度（0-8）</summary>
         public int Octave { get; set; } = 4;
 
-        /// <summary>持续时间（相对于Tempo的倍数）</summary>
-        public float Duration { get; set; } = 1.0f;
+        /// <summary>延音时长（毫秒），0表示自然衰减</summary>
+        public int DurationMs { get; set; } = 500;
 
         /// <summary>获取音符名称</summary>
         public string GetNoteName()
@@ -62,7 +62,7 @@ namespace PianoBlock
             {
                 Pitch = this.Pitch,
                 Octave = this.Octave,
-                Duration = this.Duration
+                DurationMs = this.DurationMs
             };
         }
     }

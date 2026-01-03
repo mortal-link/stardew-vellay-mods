@@ -31,3 +31,6 @@ bld/
 
 # Logs
 *.log
+
+# Textures (game assets, do not distribute)
+textures/

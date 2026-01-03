@@ -1,0 +1,34 @@
+{
+  "Name": "和弦示例 (Chord Demo)",
+  "Blocks": [
+    {
+      "Notes": [
+        { "Note": "C4", "Duration": 1000 },
+        { "Note": "E4", "Duration": 1000 },
+        { "Note": "G4", "Duration": 1000 }
+      ]
+    },
+    {
+      "Notes": [
+        { "Note": "F4", "Duration": 1000 },
+        { "Note": "A4", "Duration": 1000 },
+        { "Note": "C5", "Duration": 1000 }
+      ]
+    },
+    {
+      "Notes": [
+        { "Note": "G4", "Duration": 1000 },
+        { "Note": "B4", "Duration": 1000 },
+        { "Note": "D5", "Duration": 1000 }
+      ]
+    },
+    {
+      "Notes": [
+        { "Note": "C4", "Duration": 2000 },
+        { "Note": "E4", "Duration": 2000 },
+        { "Note": "G4", "Duration": 2000 },
+        { "Note": "C5", "Duration": 2000 }
+      ]
+    }
+  ]
+}
