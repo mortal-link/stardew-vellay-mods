@@ -1,0 +1,165 @@
+{
+  "Format": "2.0.0",
+  "Changes": [
+    // ===== 加载自定义贴图 =====
+    {
+      "Action": "Load",
+      "Target": "Mods/MortalLink.MusicBlocks/Sprites",
+      "FromFile": "assets/music_blocks.png"
+    },
+
+    // ===== 物品定义 =====
+    {
+      "Action": "EditData",
+      "Target": "Data/Objects",
+      "Entries": {
+        "{{ModId}}_GuitarBlock": {
+          "Name": "{{ModId}}_GuitarBlock",
+          "DisplayName": "Guitar Block",
+          "Description": "A music block that plays guitar sounds. Right-click to configure notes and rhythm!",
+          "Type": "Crafting",
+          "Category": -8,
+          "Price": 150,
+          "Texture": "Mods/MortalLink.MusicBlocks/Sprites",
+          "SpriteIndex": 0,
+          "Edibility": -300,
+          "CanBeGifted": false,
+          "CanBeSetDown": true,
+          "IsPlaceable": true,
+          "ExcludeFromRandomSale": false
+        },
+        "{{ModId}}_BassBlock": {
+          "Name": "{{ModId}}_BassBlock",
+          "DisplayName": "Bass Block",
+          "Description": "A music block that plays bass sounds. Right-click to configure notes and rhythm!",
+          "Type": "Crafting",
+          "Category": -8,
+          "Price": 150,
+          "Texture": "Mods/MortalLink.MusicBlocks/Sprites",
+          "SpriteIndex": 1,
+          "Edibility": -300,
+          "CanBeGifted": false,
+          "CanBeSetDown": true,
+          "IsPlaceable": true,
+          "ExcludeFromRandomSale": false
+        },
+        "{{ModId}}_PianoBlock": {
+          "Name": "{{ModId}}_PianoBlock",
+          "DisplayName": "Piano Block",
+          "Description": "A music block that plays piano sounds. Right-click to configure notes and rhythm!",
+          "Type": "Crafting",
+          "Category": -8,
+          "Price": 200,
+          "Texture": "Mods/MortalLink.MusicBlocks/Sprites",
+          "SpriteIndex": 2,
+          "Edibility": -300,
+          "CanBeGifted": false,
+          "CanBeSetDown": true,
+          "IsPlaceable": true,
+          "ExcludeFromRandomSale": false
+        },
+        "{{ModId}}_SynthBlock": {
+          "Name": "{{ModId}}_SynthBlock",
+          "DisplayName": "Synth Block",
+          "Description": "A music block that plays synthesizer sounds. Right-click to configure notes and rhythm!",
+          "Type": "Crafting",
+          "Category": -8,
+          "Price": 250,
+          "Texture": "Mods/MortalLink.MusicBlocks/Sprites",
+          "SpriteIndex": 3,
+          "Edibility": -300,
+          "CanBeGifted": false,
+          "CanBeSetDown": true,
+          "IsPlaceable": true,
+          "ExcludeFromRandomSale": false
+        }
+      }
+    },
+
+    // ===== 合成配方 =====
+    {
+      "Action": "EditData",
+      "Target": "Data/CraftingRecipes",
+      "Entries": {
+        "{{ModId}}_GuitarBlock": {
+          "Result": "{{ModId}}_GuitarBlock",
+          "Ingredients": [
+            { "ItemId": "(O)388", "Amount": 10 },
+            { "ItemId": "(O)335", "Amount": 1 }
+          ],
+          "UnlockConditions": [ "s Farming 2" ],
+          "DisplayName": "Guitar Block",
+          "Description": "Craft a guitar music block"
+        },
+        "{{ModId}}_BassBlock": {
+          "Result": "{{ModId}}_BassBlock",
+          "Ingredients": [
+            { "ItemId": "(O)388", "Amount": 10 },
+            { "ItemId": "(O)335", "Amount": 1 }
+          ],
+          "UnlockConditions": [ "s Farming 2" ],
+          "DisplayName": "Bass Block",
+          "Description": "Craft a bass music block"
+        },
+        "{{ModId}}_PianoBlock": {
+          "Result": "{{ModId}}_PianoBlock",
+          "Ingredients": [
+            { "ItemId": "(O)388", "Amount": 15 },
+            { "ItemId": "(O)334", "Amount": 2 }
+          ],
+          "UnlockConditions": [ "s Farming 3" ],
+          "DisplayName": "Piano Block",
+          "Description": "Craft a piano music block"
+        },
+        "{{ModId}}_SynthBlock": {
+          "Result": "{{ModId}}_SynthBlock",
+          "Ingredients": [
+            { "ItemId": "(O)388", "Amount": 10 },
+            { "ItemId": "(O)336", "Amount": 1 },
+            { "ItemId": "(O)787", "Amount": 1 }
+          ],
+          "UnlockConditions": [ "s Farming 4" ],
+          "DisplayName": "Synth Block",
+          "Description": "Craft a synthesizer music block"
+        }
+      }
+    },
+
+    // ===== 罗宾商店 =====
+    {
+      "Action": "EditData",
+      "Target": "Data/Shops",
+      "TargetField": [ "Carpenter", "Items" ],
+      "Entries": {
+        "{{ModId}}_GuitarBlock": {
+          "Id": "{{ModId}}_GuitarBlock",
+          "ItemId": "{{ModId}}_GuitarBlock",
+          "Price": 600,
+          "AvailableStock": 5,
+          "AvailableStockLimit": "Season"
+        },
+        "{{ModId}}_BassBlock": {
+          "Id": "{{ModId}}_BassBlock",
+          "ItemId": "{{ModId}}_BassBlock",
+          "Price": 600,
+          "AvailableStock": 5,
+          "AvailableStockLimit": "Season"
+        },
+        "{{ModId}}_PianoBlock": {
+          "Id": "{{ModId}}_PianoBlock",
+          "ItemId": "{{ModId}}_PianoBlock",
+          "Price": 800,
+          "AvailableStock": 3,
+          "AvailableStockLimit": "Season"
+        },
+        "{{ModId}}_SynthBlock": {
+          "Id": "{{ModId}}_SynthBlock",
+          "ItemId": "{{ModId}}_SynthBlock",
+          "Price": 1000,
+          "AvailableStock": 2,
+          "AvailableStockLimit": "Season"
+        }
+      }
+    }
+  ]
+}

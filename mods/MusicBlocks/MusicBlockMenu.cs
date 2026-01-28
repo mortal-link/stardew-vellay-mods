@@ -20,15 +20,12 @@ namespace MusicBlocks
         private ClickableTextureComponent? okButton;
         private ClickableTextureComponent? tempoUpButton;
         private ClickableTextureComponent? tempoDownButton;
-        private ClickableTextureComponent? instrumentLeftButton;
-        private ClickableTextureComponent? instrumentRightButton;
 
         private int selectedNoteIndex = 0;
         private int scrollOffset = 0;
         private const int maxVisibleNotes = 8;
 
         private readonly string[] noteNames = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-        private readonly InstrumentType[] instruments = (InstrumentType[])Enum.GetValues(typeof(InstrumentType));
 
         public MusicBlockMenu(Vector2 position, MusicBlockData blockData)
             : base(Game1.uiViewport.Width / 2 - 400, Game1.uiViewport.Height / 2 - 300, 800, 600)
@@ -81,19 +78,6 @@ namespace MusicBlocks
                 Game1.mouseCursors,
                 new Rectangle(421, 472, 11, 12),
                 4f);
-
-            // 乐器切换按钮
-            instrumentLeftButton = new ClickableTextureComponent(
-                new Rectangle(xPositionOnScreen + 50, yPositionOnScreen + 60, 44, 48),
-                Game1.mouseCursors,
-                new Rectangle(352, 495, 12, 11),
-                4f);
-
-            instrumentRightButton = new ClickableTextureComponent(
-                new Rectangle(xPositionOnScreen + 250, yPositionOnScreen + 60, 44, 48),
-                Game1.mouseCursors,
-                new Rectangle(365, 495, 12, 11),
-                4f);
         }
 
         public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -132,23 +116,6 @@ namespace MusicBlocks
             {
                 data.Tempo = Math.Min(2000, data.Tempo + 50);
                 Game1.playSound("smallSelect");
-            }
-
-            // 乐器切换
-            if (instrumentLeftButton?.containsPoint(x, y) ?? false)
-            {
-                int currentIndex = Array.IndexOf(instruments, data.Instrument);
-                int newIndex = (currentIndex - 1 + instruments.Length) % instruments.Length;
-                data.Instrument = instruments[newIndex];
-                Game1.playSound("shwip");
-            }
-
-            if (instrumentRightButton?.containsPoint(x, y) ?? false)
-            {
-                int currentIndex = Array.IndexOf(instruments, data.Instrument);
-                int newIndex = (currentIndex + 1) % instruments.Length;
-                data.Instrument = instruments[newIndex];
-                Game1.playSound("shwip");
             }
 
             // 检查是否点击了音符列表
@@ -260,16 +227,10 @@ namespace MusicBlocks
             Game1.drawDialogueBox(xPositionOnScreen, yPositionOnScreen, width, height, false, true);
 
             // 绘制标题（显示乐器类型）
-            string title = $"Music Block - {data.GetInstrumentNameCN()}";
+            string title = $"{data.GetInstrumentName()} Block";
             Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
             b.DrawString(Game1.dialogueFont, title,
                 new Vector2(xPositionOnScreen + width / 2 - titleSize.X / 2, yPositionOnScreen + 20),
-                Game1.textColor);
-
-            // 绘制乐器选择区域
-            string instrumentLabel = $"< {data.GetInstrumentName()} >";
-            b.DrawString(Game1.dialogueFont, instrumentLabel,
-                new Vector2(xPositionOnScreen + 100, yPositionOnScreen + 60),
                 Color.Gold);
 
             // 绘制曲速信息
@@ -287,8 +248,6 @@ namespace MusicBlocks
             okButton?.draw(b);
             tempoUpButton?.draw(b);
             tempoDownButton?.draw(b);
-            instrumentLeftButton?.draw(b);
-            instrumentRightButton?.draw(b);
 
             // 绘制按钮标签
             DrawButtonLabels(b);

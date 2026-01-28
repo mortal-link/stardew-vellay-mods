@@ -1,0 +1,17 @@
+{
+  "Name": "[CP] Music Blocks",
+  "Author": "MortalLink",
+  "Version": "1.0.0",
+  "Description": "Adds music block items to the game",
+  "UniqueID": "MortalLink.MusicBlocks.CP",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [],
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  },
+  "Dependencies": [
+    {
+      "UniqueID": "MortalLink.MusicBlocks"
+    }
+  ]
+}
