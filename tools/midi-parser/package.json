@@ -1,0 +1,23 @@
+{
+  "name": "@stardew-mods/midi-parser",
+  "version": "1.0.0",
+  "description": "MIDI parser library for Stardew Valley music blocks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "midi",
+    "parser",
+    "stardew-valley"
+  ],
+  "author": "MortalLink",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}

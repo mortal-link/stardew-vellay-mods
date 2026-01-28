@@ -1,0 +1,16 @@
+{
+  "Name": "Big Map Mod - Music Studio",
+  "Author": "MortalLink",
+  "Version": "1.0.0",
+  "Description": "A large map designed for music creation with Music Blocks",
+  "UniqueID": "MortalLink.BigMapMod",
+  "EntryDll": "BigMapMod.dll",
+  "MinimumApiVersion": "3.0.0",
+  "UpdateKeys": [],
+  "Dependencies": [
+    {
+      "UniqueID": "MortalLink.MusicBlocks",
+      "IsRequired": false
+    }
+  ]
+}
