@@ -1,0 +1,65 @@
+{
+  "Format": "2.0.0",
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "Data/Objects",
+      "Entries": {
+        "{{ModId}}_PianoBlock": {
+          "Name": "{{ModId}}_PianoBlock",
+          "DisplayName": "钢琴块",
+          "Description": "一个可以配置音符的方块。右键点击配置音调和节奏，创作你的音乐！",
+          "Type": "Crafting",
+          "Category": -8,
+          "Price": 100,
+          "Texture": "Maps/springobjects",
+          "SpriteIndex": 463,
+          "Edibility": -300,
+          "CanBeGifted": false,
+          "CanBeSetDown": true,
+          "IsPlaceable": true,
+          "ExcludeFromRandomSale": false
+        }
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Data/CraftingRecipes",
+      "Entries": {
+        "{{ModId}}_PianoBlock": {
+          "Result": "{{ModId}}_PianoBlock",
+          "Ingredients": [
+            {
+              "ItemId": "(O)388",
+              "Amount": 10
+            },
+            {
+              "ItemId": "(O)334",
+              "Amount": 1
+            }
+          ],
+          "UnlockConditions": [
+            "s Farming 3"
+          ],
+          "DisplayName": "钢琴块",
+          "Description": "制作一个可配置的音乐方块"
+        }
+      }
+    },
+    {
+      "Action": "EditData",
+      "Target": "Data/Shops",
+      "TargetField": [ "Carpenter", "Items" ],
+      "Entries": {
+        "{{ModId}}_PianoBlock": {
+          "Id": "{{ModId}}_PianoBlock",
+          "ItemId": "{{ModId}}_PianoBlock",
+          "Price": 500,
+          "AvailableStock": 1,
+          "AvailableStockLimit": "Season",
+          "Condition": "PLAYER_FARMING_LEVEL Current 3"
+        }
+      }
+    }
+  ]
+}

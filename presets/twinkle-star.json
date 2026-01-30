@@ -1,0 +1,19 @@
+{
+  "Name": "小星星 (Twinkle Twinkle Little Star)",
+  "Blocks": [
+    { "Notes": [{ "Note": "C4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "C4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "G4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "G4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "A4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "A4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "G4", "Duration": 1000 }] },
+    { "Notes": [{ "Note": "F4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "F4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "E4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "E4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "D4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "D4", "Duration": 500 }] },
+    { "Notes": [{ "Note": "C4", "Duration": 1000 }] }
+  ]
+}

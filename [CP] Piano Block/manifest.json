@@ -1,0 +1,17 @@
+{
+  "Name": "[CP] Piano Block",
+  "Author": "YourName",
+  "Version": "1.0.0",
+  "Description": "为钢琴块mod添加游戏内容",
+  "UniqueID": "YourName.PianoBlock.CP",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": [],
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  },
+  "Dependencies": [
+    {
+      "UniqueID": "YourName.PianoBlock"
+    }
+  ]
+}

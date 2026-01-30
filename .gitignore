@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# NuGet
+*.nupkg
+packages/
+
+# Logs
+*.log
