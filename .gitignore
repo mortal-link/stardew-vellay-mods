@@ -34,3 +34,7 @@ bld/
 
 # Textures (game assets, do not distribute)
 textures/
+
+# Frontend projects (separate repositories)
+midi-to-stardew/
+midi-to-stardew-react/
