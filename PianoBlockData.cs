@@ -36,6 +36,9 @@ namespace PianoBlock
         /// <summary>延音时长（毫秒），0表示自然衰减</summary>
         public int DurationMs { get; set; } = 500;
 
+        /// <summary>力度（0-127），影响音色和音量</summary>
+        public int Velocity { get; set; } = 100;
+
         /// <summary>获取音符名称</summary>
         public string GetNoteName()
         {
@@ -62,7 +65,8 @@ namespace PianoBlock
             {
                 Pitch = this.Pitch,
                 Octave = this.Octave,
-                DurationMs = this.DurationMs
+                DurationMs = this.DurationMs,
+                Velocity = this.Velocity
             };
         }
     }
